@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>RunLog — Speedrun &amp; Backlog</title>
+<meta name="theme-color" content="#10131c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+<!-- <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"> -->
+ <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡️</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar" id="topbar">
+    <button class="icon-btn" id="btn-back" hidden aria-label="Voltar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="topbar-title">
+      <span class="topbar-eyebrow" id="topbar-eyebrow">runlog</span>
+      <h1 id="topbar-heading">Corrida</h1>
+    </div>
+    <button class="icon-btn" id="btn-context" hidden aria-label="Ações"></button>
+  </header>
+
+  <!-- ===================== MAIN ===================== -->
+  <main id="main">
+
+    <!-- ---------- SPEEDRUN HOME ---------- -->
+    <section class="screen" id="screen-speedrun-home" data-nav="speedrun">
+      <div class="list" id="speedrun-game-list"></div>
+      <div class="empty-state" id="speedrun-empty" hidden>
+        <p class="empty-title">Nenhuma corrida cadastrada</p>
+        <p class="empty-sub">Crie um Nome/categoria com as áreas que você vai cronometrar e comece a correr contra seu próprio fantasma.</p>
+      </div>
+      <button class="fab" id="btn-new-game" aria-label="Nova categoria de speedrun">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </section>
+
+    <!-- ---------- SPEEDRUN GAME FORM ---------- -->
+    <section class="screen" id="screen-speedrun-form" data-nav="speedrun">
+      <form id="form-speedrun-game" class="form">
+        <label class="field">
+          <span class="field-label">Nome / categoria</span>
+          <input type="text" id="game-name" placeholder="Ex: Hollow Knight — Any%" required maxlength="60">
+        </label>
+
+        <div class="field">
+          <span class="field-label">Áreas / segmentos (na ordem que você vai passar)</span>
+          <div class="segment-list" id="segment-list"></div>
+          <button type="button" class="btn-ghost btn-small" id="btn-add-segment">+ adicionar área</button>
+          <p class="field-hint" id="segment-edit-warning" hidden>Essa categoria já tem corridas salvas — mudar as áreas pode deixar o histórico desalinhado.</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-game">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+        <button type="button" class="btn-danger-text" id="btn-delete-game" hidden>Excluir esta categoria e todo o histórico</button>
+      </form>
+    </section>
+
+    <!-- ---------- SPEEDRUN TIMER ---------- -->
+    <section class="screen" id="screen-speedrun-timer" data-nav="speedrun">
+      <div class="timer-wrap">
+        <div class="pb-line" id="pb-line">sem recorde ainda</div>
+        <div class="sob-line" id="sob-line" hidden>Sum of Best: <span id="sob-time">0:00.00</span></div>
+        <div class="clock-box" id="clock-box">
+          <div class="clock" id="clock-display">0:00.00</div>
+          <div class="live-delta" id="live-delta"></div>
+        </div>
+
+        <div class="splits-list" id="splits-list"></div>
+      </div>
+
+      <div class="run-summary" id="run-summary" hidden>
+        <p class="run-summary-flag" id="run-summary-flag">Novo recorde!</p>
+        
+        <!-- NOVA CAIXA LADO A LADO -->
+        <div class="summary-times-row">
+          <div class="summary-time-box">
+            <div class="summary-time-label">Tempo Final</div>
+            <div class="summary-time-value" id="run-summary-time">0:00.00</div>
+          </div>
+          <div class="summary-time-box">
+            <div class="summary-time-label">Recorde Anterior</div>
+            <div class="summary-time-value" id="run-summary-pb">0:00.00</div>
+          </div>
+        </div>
+        
+        <p class="run-summary-sub" id="run-summary-sub"></p>
+        
+        <div class="run-summary-details" id="run-summary-details"></div>
+        <button class="btn-primary" id="btn-summary-close">Fechar</button>
+      </div>
+
+      <div class="timer-controls">
+        <!-- O botão Iniciar fica sozinho em cima por ser o mais importante -->
+        <button class="btn-timer-main" id="btn-timer-main">Iniciar</button>
+        
+        <!-- Os botões secundários ficam na linha de baixo -->
+        <button class="btn-ghost btn-small" id="btn-undo-split" disabled>Desfazer</button>
+        <button class="btn-ghost btn-small" id="btn-skip-split" disabled>Pular</button>
+        <button class="btn-ghost btn-small" id="btn-pause-run" disabled>Pausar</button>
+        <button class="btn-ghost btn-small" id="btn-reset-run" disabled>Resetar</button>
+      </div>
+    </section>
+
+    <!-- ---------- SPEEDRUN HISTORY ---------- -->
+    <section class="screen" id="screen-speedrun-history" data-nav="speedrun">
+      <div class="list" id="history-list"></div>
+      <div class="empty-state" id="history-empty" hidden>
+        <p class="empty-title">Nenhuma corrida finalizada ainda</p>
+        <p class="empty-sub">Complete uma tentativa para ver o histórico aqui.</p>
+      </div>
+    </section>
+
+    <!-- ---------- BACKLOG (MEDIA) ---------- -->
+    <section class="screen" id="screen-backlog" data-nav="backlog">
+      <!-- NOVA BARRA DE PESQUISA -->
+      <div class="search-bar">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="search-media" placeholder="Pesquisar título...">
+        <button type="button" class="search-clear" id="search-clear" hidden aria-label="Limpar pesquisa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <!-- FIM DA BARRA -->
+      <div class="chip-row" id="type-filter">
+        <button class="chip is-active" data-type="all">Todos</button>
+        <button class="chip" data-type="game">Jogos</button>
+        <button class="chip" data-type="movie">Filmes</button>
+        <button class="chip" data-type="book">Livros</button>
+      </div>
+      <div class="sort-row">
+        <select id="sort-select" class="select">
+          <option value="recent">Mais recentes</option>
+          <option value="rating">Melhor nota</option>
+          <option value="value-asc">Melhor custo-benefício</option>
+          <option value="value-desc">Maior custo por hora</option>
+          <option value="title">Título A-Z</option>
+        </select>
+      </div>
+
+      <div class="list" id="media-list"></div>
+      <div class="empty-state" id="media-empty" hidden>
+        <p class="empty-title">Nada por aqui ainda</p>
+        <p class="empty-sub">Adicione um jogo, filme ou livro para começar a registrar notas, análises e o valor da hora.</p>
+      </div>
+      <button class="fab" id="btn-new-media" aria-label="Adicionar mídia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </section>
+
+    <!-- ---------- MEDIA FORM ---------- -->
+    <section class="screen" id="screen-media-form" data-nav="backlog">
+      <form id="form-media" class="form">
+
+        <div class="segmented" id="media-type-segmented">
+          <button type="button" class="seg-btn is-active" data-type="game">Jogo</button>
+          <button type="button" class="seg-btn" data-type="movie">Filme</button>
+          <button type="button" class="seg-btn" data-type="book">Livro</button>
+        </div>
+
+        <label class="field">
+          <span class="field-label">Título</span>
+          <input type="text" id="media-title" required maxlength="120" placeholder="Ex: Hollow Knight">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Status</span>
+          <select id="media-status" class="select">
+            <option value="queue">Na fila</option>
+            <option value="doing">Em andamento</option>
+            <option value="done">Completo</option>
+            <option value="dropped">Abandonado</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Nota <span class="field-value" id="rating-value">—</span></span>
+          <input type="range" id="media-rating" min="0" max="10" step="0.5" value="0">
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field-label">Preço pago (R$)</span>
+            <input type="number" id="media-price" min="0" step="0.01" inputmode="decimal" placeholder="0,00">
+          </label>
+          <label class="field">
+            <span class="field-label">Horas dedicadas</span>
+            <input type="number" id="media-hours" min="0" step="0.5" inputmode="decimal" placeholder="0">
+          </label>
+        </div>
+
+        <div class="value-per-hour-box" id="value-per-hour-box" hidden>
+          <span id="value-per-hour-label">Valor da hora</span>
+          <strong id="value-per-hour-amount">R$ 0,00</strong>
+        </div>
+
+        <label class="field">
+          <span class="field-label">Data de conclusão</span>
+          <input type="date" id="media-date">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Análise / anotações</span>
+          <textarea id="media-review" rows="5" placeholder="O que você achou? vale a pena?"></textarea>
+        </label>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-media">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+        <button type="button" class="btn-danger-text" id="btn-delete-media" hidden>Excluir</button>
+      </form>
+    </section>
+
+    <!-- ---------- DADOS / SETTINGS ---------- -->
+    <section class="screen" id="screen-settings" data-nav="settings">
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="settings-card">
+        <h2 class="settings-card-title">Backup</h2>
+        <p class="settings-card-desc">Tudo fica salvo no seu navegador (IndexedDB). Exporte de vez em quando para não perder nada, e importe para restaurar em outro aparelho.</p>
+        <div class="settings-actions">
+          <button class="btn-primary" id="btn-export">Exportar tudo (.json)</button>
+          <button class="btn-secondary" id="btn-import">Importar backup (.json)</button>
+          <input type="file" id="file-import" accept="application/json" hidden>
+        </div>
+      </div>
+
+      <div class="settings-card danger-zone">
+        <h2 class="settings-card-title">Zona de risco</h2>
+        <p class="settings-card-desc">Apaga permanentemente tudo que está salvo neste navegador. Exporte um backup antes.</p>
+        <button class="btn-danger" id="btn-clear-all">Apagar todos os dados</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== BOTTOM NAV ===================== -->
+  <nav class="bottomnav" id="bottomnav">
+    <button class="nav-btn" data-nav="speedrun">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18M4 4h11l-2 3.5L15 11H4"/></svg>
+      <span>Corrida</span>
+    </button>
+    <button class="nav-btn is-active" data-nav="backlog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v16"/></svg>
+      <span>Backlog</span>
+    </button>
+    <button class="nav-btn" data-nav="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M4.2 6.2l2.8 2.8M17 15l2.8 2.8M3 12h4M17 12h4M4.2 17.8L7 15M17 9l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Dados</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="db.js"></script>
+<script src="speedrun.js"></script>
+<script src="media.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
