@@ -191,7 +191,7 @@ main{
 /* =========================================================
    Lists / cards
    ========================================================= */
-.list{ max-height: 365px; border-radius: 5%; overflow-y: auto; display:flex; flex-direction:column; gap:10px; }
+.list{ max-height: 365px; border-radius: 5%; padding: 7px 1px 7px 1px; overflow-y: auto; display:flex; flex-direction:column; gap:10px; }
 
 .card{
   background:var(--bg-elevated);
