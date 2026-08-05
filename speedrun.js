@@ -111,15 +111,27 @@ const Speedrun = (() => {
   // =========================================================
   // Category (game) form
   // =========================================================
-  function renderSegmentRows() {
+function renderSegmentRows() {
     const wrap = document.getElementById('segment-list');
     wrap.innerHTML = formSegments.map((name, i) => `
       <div class="segment-row" data-idx="${i}">
         <span class="seg-index">${i + 1}</span>
         <input type="text" value="${escapeHtml(name)}" placeholder="Nome da área" data-seg-input maxlength="60">
-        <button type="button" class="seg-remove" data-seg-remove aria-label="Remover área">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
+        
+        <!-- Nosso novo grupo de botões -->
+        <div class="seg-actions">
+          <button type="button" class="seg-action-icon" data-seg-up ${i === 0 ? 'disabled' : ''} aria-label="Mover para cima">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+          </button>
+          
+          <button type="button" class="seg-action-icon" data-seg-down ${i === formSegments.length - 1 ? 'disabled' : ''} aria-label="Mover para baixo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          
+          <button type="button" class="seg-action-icon seg-remove" data-seg-remove aria-label="Remover área">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
       </div>`).join('');
   }
 
@@ -614,21 +626,51 @@ const Speedrun = (() => {
     document.getElementById('btn-new-game').onclick = () => openGameForm(null);
   }
 
+
   function wireGameForm() {
     const segList = document.getElementById('segment-list');
+    
     segList.oninput = (e) => {
       const input = e.target.closest('[data-seg-input]');
       if (!input) return;
       const idx = Number(input.closest('.segment-row').dataset.idx);
       formSegments[idx] = input.value;
     };
+    
     segList.onclick = (e) => {
-      const btn = e.target.closest('[data-seg-remove]');
-      if (!btn) return;
-      const idx = Number(btn.closest('.segment-row').dataset.idx);
-      if (formSegments.length <= 1) { toast('Precisa de pelo menos 1 área'); return; }
-      formSegments.splice(idx, 1);
-      renderSegmentRows();
+      const row = e.target.closest('.segment-row');
+      if (!row) return;
+      const idx = Number(row.dataset.idx);
+
+      // Botão de Excluir
+      if (e.target.closest('[data-seg-remove]')) {
+        if (formSegments.length <= 1) { toast('Precisa de pelo menos 1 área'); return; }
+        formSegments.splice(idx, 1);
+        renderSegmentRows();
+        return;
+      }
+
+      // Botão Mover para Cima
+      if (e.target.closest('[data-seg-up]')) {
+        if (idx > 0) {
+          const temp = formSegments[idx];
+          formSegments[idx] = formSegments[idx - 1]; // Joga a área de cima para baixo
+          formSegments[idx - 1] = temp;              // Puxa a área atual para cima
+          renderSegmentRows();
+        }
+        return;
+      }
+
+      // Botão Mover para Baixo
+      if (e.target.closest('[data-seg-down]')) {
+        if (idx < formSegments.length - 1) {
+          const temp = formSegments[idx];
+          formSegments[idx] = formSegments[idx + 1]; // Joga a área de baixo para cima
+          formSegments[idx + 1] = temp;              // Empurra a área atual para baixo
+          renderSegmentRows();
+        }
+        return;
+      }
     };
 
     document.getElementById('btn-add-segment').onclick = () => {
