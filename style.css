@@ -305,7 +305,7 @@ input[type=range]::-moz-range-thumb{
 .value-per-hour-box.is-bad strong{ color:var(--coral); }
 
 /* segment list (speedrun form) */
-.segment-list{ overflow-y: auto; max-height: 300px; display:flex; flex-direction:column; gap:8px; }
+.segment-list{ overflow-y: auto; padding: 5px 0px 5px 0px; max-height: 300px; display:flex; flex-direction:column; gap:8px; }
 .segment-row{ display:flex; align-items:center; gap:8px; }
 .segment-row .seg-index{ font-family:var(--font-mono); color:var(--text-faint); font-size:0.8rem; width:20px; text-align:right; flex-shrink:0; }
 .segment-row input{ flex:1; }
